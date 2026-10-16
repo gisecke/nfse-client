@@ -12,3 +12,4 @@ quick-xml = "0.42.0"
 dotenvy = "0.15.7"
 openssl = { version = "0.10", features = ["vendored"] }
 base64 = "0.23.1"
+askama = "0.14.0"

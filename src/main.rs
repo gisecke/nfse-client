@@ -4,9 +4,12 @@ use reqwest::Identity;
 use std::fs::File;
 use std::env;
 use std::io::Read;
-use openssl::{hash::{hash, MessageDigest}, pkcs12::Pkcs12, sign::Signer};
+use openssl::{hash::{hash, MessageDigest}, pkcs12::Pkcs12};
 use base64::{Engine as _, engine::general_purpose};
 
+use nfse_client::handlers::handlers::*;
+
+#[warn(dead_code)]
 fn calcular_digest_value(xml: &str) -> Result<String, Box<dyn std::error::Error>> {
 	let xml_bytes = xml.as_bytes();
 	let digest_bytes = hash(MessageDigest::sha1(), xml_bytes)?;
@@ -28,7 +31,7 @@ async fn home() -> impl Responder {
         .expect("PASSWORD_CERTIFICATE não presente"))
         .expect("Erro ao analisar o certificado");
 
-    let x509_cert = parsed_cert.cert.expect("Certificado público não encontrado no PFX");
+    let _x509_cert = parsed_cert.cert.expect("Certificado público não encontrado no PFX");
 
     // 1. XML de dados limpo (sem assinatura, pois a consulta é autenticada via mTLS)
     let xml_dados_limpo = r#"<ConsultarNfseServicoPrestadoEnvio xmlns="http://www.sped.fazenda.gov.br/nfse"><Prestador><CNPJ>68356802000172</CNPJ><IM>133468</IM></Prestador><NumeroNfse>1</NumeroNfse><Tomador><CNPJ>63554067000198</CNPJ></Tomador><Pagina>1</Pagina></ConsultarNfseServicoPrestadoEnvio>"#;
@@ -77,6 +80,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
         .service(home)
+        .service(consultar_dados_cadastrais)
     })
     .bind("0.0.0.0:8080")?
     .run()
