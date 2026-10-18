@@ -1,0 +1,8 @@
+use serde::Deserialize;
+
+#[derive(Deserialize)]
+pub struct ConsultarDadosCadastraisForm {
+    pub cnpj: String,
+    pub cpf: String,
+    pub im: String,
+}

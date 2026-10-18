@@ -1,3 +1,4 @@
+use actix_files as fs;
 use actix_web::{App, HttpResponse, HttpServer, Responder, get};
 use dotenvy::dotenv;
 use reqwest::Identity;
@@ -18,8 +19,8 @@ fn calcular_digest_value(xml: &str) -> Result<String, Box<dyn std::error::Error>
 }
 
 
-#[get("/")]
-async fn home() -> impl Responder {
+#[get("/home")]
+async fn home_old() -> impl Responder {
     let certificate_file = env::var("CERTIFICATE_FILE").expect("CERTIFICATE_FILE não encontrado");
     let mut file = File::open(certificate_file).expect("Erro ao abrir o arquivo de certificado");
     let mut buf = Vec::new();
@@ -79,8 +80,10 @@ async fn main() -> std::io::Result<()> {
     dotenv().ok();
     HttpServer::new(|| {
         App::new()
+        .service(fs::Files::new("/static", "./static").show_files_listing())
         .service(home)
-        .service(consultar_dados_cadastrais)
+        .service(consultar_dados_cadastrais_get)
+        .service(consultar_dados_cadastrais_post)
     })
     .bind("0.0.0.0:8080")?
     .run()

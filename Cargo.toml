@@ -5,8 +5,9 @@ edition = "2024"
 
 [dependencies]
 chrono = "0.4.45"
-serde = "1.0.229"
+serde = {version="1.0.229", features = ["derive"] }
 actix-web = "4"
+actix-files = "0.7.0"
 reqwest = {version="0.13.5", features = ["native-tls"]}
 quick-xml = "0.42.0"
 dotenvy = "0.15.7"
