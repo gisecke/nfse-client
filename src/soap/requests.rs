@@ -45,6 +45,5 @@ pub async fn send_request(xml: String, service: String) -> Result<Response, Erro
         .body(soap_body)
         .send()
         .await?;
-    println!("{}", response.status());
     Ok(response)
 }

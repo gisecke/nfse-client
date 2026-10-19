@@ -1,0 +1,42 @@
+{% extends "index.html" %}
+{% block title %}Consultar Dados Cadastrais{% endblock %}
+{% block content %}
+
+<div>
+    <h3>Dados cadastrais</h3>
+    <div>
+        <div>
+            <div>
+                <p>Nome / Nome Empresarial</p>
+                <p>{{nome}}</p>
+            </div>
+            <div>
+                <p>CNPJ / CPF / NIF</p>
+                <p>{{documento}}</p>
+            </div>
+            <div>
+                <p>Status cadastro</p>
+                <p>{{status_cadastro}}</p>
+            </div>
+            <div>
+                <p>Indicador Municipal (Inscrição)</p>
+                <p>{{im}}</p>
+            </div>
+        </div>
+        <div>
+            <div>
+                <p>Telefone</p>
+                <p>{{telefone}}</p>
+            </div>
+            <div>
+                <p>Email</p>
+                <p>{{email}}</p>
+            </div>
+            <div>
+                <p>Endereço</p>
+                <p>{{rua}}, {{numero}}, {{municipio}} - {{estado}} CEP: {{cep}}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

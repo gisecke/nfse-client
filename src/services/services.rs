@@ -3,7 +3,7 @@ use crate::handlers::events::remove_period_dash_and_slash;
 use crate::soap::requests::send_request;
 
 
-pub async fn cosultar_dados_cadastrais(dados: ConsultarDadosCadastraisForm) {
+pub async fn cosultar_dados_cadastrais(dados: ConsultarDadosCadastraisForm) -> Result<String, reqwest::Error> {
     let cnpj = dados.cnpj;
     let cpf = dados.cpf;
     let im = dados.im;
@@ -25,7 +25,9 @@ pub async fn cosultar_dados_cadastrais(dados: ConsultarDadosCadastraisForm) {
 
 
     match send_request(xml_bruto, "ConsultarDadosCadastrais".to_string()).await {
-        Ok(response) => println!("{}", response.text().await.unwrap()),
-        Err(e) => println!("{}", e)
+        Ok(response) => {
+            response.text().await
+        },
+        Err(e) => Err(e)
     } 
 }
