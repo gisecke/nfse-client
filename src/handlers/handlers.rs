@@ -1,12 +1,15 @@
-use crate::handlers::events::extract_pay_load;
+use crate::handlers::events::{extract_pay_load, remove_period_dash_and_slash};
 use crate::models::public::*;
 use actix_web::{HttpResponse, Responder, get, post, web};
 use askama::Template;
+use chrono::Local;
 use crate::forms::forms::*;
 use crate::services::services::*;
 use crate::deserialize_data::deserialize::*;
 
 use quick_xml::de;
+use serde_json::Value;
+use crate::requests::json::get_cep_json;
 
 // Home page
 #[get("/")]
@@ -35,6 +38,8 @@ async fn consultar_dados_cadastrais_post(form: web::Form<ConsultarDadosCadastrai
     // Aqui você pode processar os dados recebidos do formulário
    match cosultar_dados_cadastrais(form.into_inner()).await {
         Ok(resposta) => {
+
+            println!("{}", resposta);
             
             let resultado: ConsultarDadosCadastraisResposta = de::from_str(extract_pay_load(&resposta, "ConsultarDadosCadastraisResposta").expect("Não encontrado dados")).unwrap();
             match resultado.cadastro {
@@ -81,3 +86,60 @@ async fn consultar_dados_cadastrais_post(form: web::Form<ConsultarDadosCadastrai
     HttpResponse::Ok().body("Dados recebidos com sucesso!")
 }
 //---------------------- Consultar Dados Cadastrais
+
+
+//Consulta DPS disponivel
+#[get("/dps-disponivel")]
+async fn numero_dps_disponivel() -> impl Responder {
+    match consultar_dps_disponivel().await {
+        Ok(resposta) => {
+            HttpResponse::Ok().body(resposta)
+        },
+        Err(_) => {
+            HttpResponse::InternalServerError().body("Erro:")
+        }
+    }
+
+}
+
+#[get("/gerar-nfse")]
+async fn gerar_nfse_get() -> impl Responder {
+
+
+    let template = GerarNFSETemplate {
+        data_local: Local::now().date_naive(),
+        rua: String::new(),
+        bairro: String::new(),
+        cidade: String::new(),
+    };
+    HttpResponse::Ok()
+    .content_type("text/html; charset=utf-8")
+        .body(template.render().unwrap())
+}
+
+#[post("/api/buscar-cep")]
+async fn buscar_cep(form: web::Form<CepForm>) -> impl Responder {
+    let resultado = remove_period_dash_and_slash(form.cep.as_str());
+
+    match get_cep_json(resultado).await {
+        Ok(json) => {
+            let value: Value = serde_json::from_str(json.text().await.unwrap().as_str()).unwrap();
+            let template = CepTemplate {
+                bairro: match value["bairro"].as_str() {
+                    Some(bairro) => bairro.to_string(),
+                    None => "".to_string(),
+                },
+                cidade: match value["localidade"].as_str() {
+                    Some(localidade) => localidade.to_string(),
+                    None => "".to_string(),
+                },
+                rua: match value["logradouro"].as_str() {
+                    Some(logradouro) => logradouro.to_string(),
+                    None => "".to_string(),
+                },
+            };
+            HttpResponse::Ok().body(template.render().unwrap())
+        },
+        Err(_e) => HttpResponse::InternalServerError().body("Erro json"),
+    }
+}

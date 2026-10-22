@@ -6,3 +6,8 @@ pub struct ConsultarDadosCadastraisForm {
     pub cpf: String,
     pub im: String,
 }
+
+#[derive(Deserialize)]
+pub struct CepForm {
+    pub cep: String,
+}

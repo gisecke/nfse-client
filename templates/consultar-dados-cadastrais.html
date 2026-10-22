@@ -7,17 +7,10 @@
             </div>
             <div class="p-2 w-50 d-flex justify-content-center">
                 <form method="post" action="/consultar-dados-cadastrais" class="p-4 p-md-5 d-flex flex-column align-items-center w-75 border rounded-3 bg-1">
-                    <div class="d-flex flex-row">
-                    <div class="form-field p-3 d-flex">
-                        <input class="radio" name="radiosTipoCadastro" type="radio" value="cnpj" id="cnpj_radio" checked>
-                        <label for="cnpj_radio">CNPJ</label>
-                        <input class="radio" name="radiosTipoCadastro" type="radio" value="cpf" id="cpf_radio">
-                        <label for="cpf_radio">CPF</label>
-                    </div>
-                    </div>
+
                     <div class="form-field w-50" id="campo-cnpj">
-                        <label for="cnpj" class="form-label">CNPJ:</label>
-                        <input type="text" id="cnpj" name="cnpj" class="form-control"><br><br>
+                        <label for="docTomador" class="form-label">CNPJ / CPF</label>
+                        <input type="text" id="docTomador"  class="form-control" placeholder="Apenas números"><br><br>
                     </div>
                     <div class="form-field w-50" id="campo-cpf">
                         <label for="cpf" class="form-label">CPF:</label>

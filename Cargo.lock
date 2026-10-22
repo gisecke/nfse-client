@@ -1339,6 +1339,7 @@ dependencies = [
  "quick-xml",
  "reqwest",
  "serde",
+ "serde_json",
 ]
 
 [[package]]

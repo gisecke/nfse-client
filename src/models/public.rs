@@ -1,4 +1,6 @@
 use askama::Template;
+use chrono::{ NaiveDate};
+use serde_json::Value;
 
 #[derive(Template)]
 #[template(path = "index.html")]
@@ -27,4 +29,21 @@ pub struct ResultadoConsultarDadosCadastraisTemplate {
     pub municipio: String,
     pub estado: String,
     pub cep: String,
+}
+
+#[derive(Template)]
+#[template(path = "gerar-nfse.html")]
+pub struct GerarNFSETemplate {
+    pub data_local: NaiveDate,
+    pub rua: String,
+    pub bairro: String,
+    pub cidade: String,
+}
+
+#[derive(Template)]
+#[template(path = "cep.html")]
+pub struct CepTemplate {
+    pub rua: String,
+    pub bairro: String,
+    pub cidade: String,
 }

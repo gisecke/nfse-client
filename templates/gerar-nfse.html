@@ -1,0 +1,88 @@
+{% extends "index.html" %}
+{% block title %}Gerar NFSe{% endblock %}
+{% block content %}
+
+<div class="container my-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Emitir Nova NFS-e (Tomador / Faturamento)</h5>
+        </div>
+        <div class="card-body bg-1">
+            <form method="post" action="gerar-nfse">
+                <!-- Linha 1: Dados Básicos da Nota -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="serie" class="form-label">Série da DPS</label>
+                        <input type="text" class="form-control" id="serie" value="1" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="nDPS" class="form-label">Número da DPS</label>
+                        <input type="number" class="form-control" id="nDPS" placeholder="Ex: 105" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="dCompet" class="form-label">Data de Competência</label>
+                        <input type="date" class="form-control" id="dCompet" value="{{data_local}}" required disabled readonly>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Linha 2: Dados do Tomador (Ex: Hapvida) -->
+                <h6 class="text-secondary mb-3">Identificação do Tomador</h6>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="docTomador" class="form-label">CPF / CNPJ</label>
+                        <input type="text" class="form-control" id="docTomador" placeholder="Apenas números" required>
+                    </div>
+                    <div class="col-md-8">
+                        <label for="xNome" class="form-label">Razão Social / Nome Completo</label>
+                        <input type="text" class="form-control" id="xNome" placeholder="Ex: Hapvida Assistência Médica" required>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label for="cep" class="form-label">CEP</label>
+                        <input type="text"
+                               class="form-control"
+                               id="cep"
+                               name="cep"
+                               placeholder="00000-000"
+                               hx-post="/api/buscar-cep"
+                               hx-trigger="blur"
+                               hx-target="#resultado-endereco"
+                               hx-swap="innerHTML">
+                    </div>
+                    {%  include "cep.html" %}
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Linha 3: Dados do Serviço -->
+                <h6 class="text-secondary mb-3">Informações do Serviço</h6>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="cTribNac" class="form-label">Código de Tributação Nacional (LC 116)</label>
+                        <input type="text" class="form-control" id="cTribNac" value="04.08.02" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="vServ" class="form-label">Valor do Serviço (R$)</label>
+                        <input type="number" step="0.01" class="form-control" id="vServ" placeholder="0,00" required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="xDescServ" class="form-label">Descrição Completa do Serviço</label>
+                    <textarea class="form-control" id="xDescServ" rows="3" placeholder="Descreva detalhadamente o serviço prestado..." required></textarea>
+                </div>
+
+                <!-- Botão de Envio -->
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                    <button type="submit" class="btn btn-success px-4">Gerar e Enviar NFS-e</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
