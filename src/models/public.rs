@@ -38,6 +38,8 @@ pub struct GerarNFSETemplate {
     pub rua: String,
     pub bairro: String,
     pub cidade: String,
+    pub uf: String,
+    pub estado: String
 }
 
 #[derive(Template)]
@@ -46,4 +48,6 @@ pub struct CepTemplate {
     pub rua: String,
     pub bairro: String,
     pub cidade: String,
+    pub uf: String,
+    pub estado: String,
 }

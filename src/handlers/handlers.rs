@@ -111,6 +111,8 @@ async fn gerar_nfse_get() -> impl Responder {
         rua: String::new(),
         bairro: String::new(),
         cidade: String::new(),
+        uf: String::new(),
+        estado: String::new(),
     };
     HttpResponse::Ok()
     .content_type("text/html; charset=utf-8")
@@ -137,6 +139,14 @@ async fn buscar_cep(form: web::Form<CepForm>) -> impl Responder {
                     Some(logradouro) => logradouro.to_string(),
                     None => "".to_string(),
                 },
+                uf: match value["uf"].as_str() {
+                    Some(uf) => uf.to_string(),
+                    None => "".to_string(),
+                },
+                estado: match value["estado"].as_str() {
+                    Some(estado) => estado.to_string(),
+                    None => "".to_string(),
+                }
             };
             HttpResponse::Ok().body(template.render().unwrap())
         },
