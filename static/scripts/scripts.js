@@ -1,6 +1,5 @@
 //mostrar e oculcar os campos cnpj e cpf
         const inscricaoMunicipal = document.getElementById('im');
-console.log(inscricaoMunicipal);
         function mascaraInscricaoMunicipal(valor) {
             return valor
             .replace(/\D/g, ''); // Remove tudo o que não é dígito
@@ -55,4 +54,15 @@ document.addEventListener('input', function (e) {
         input.value = value;
     }
 });
+
+function selecionarMunicipio(botao) {
+    // Lê os dados direto dos atributos data-* do botão clicado
+    const ibge = botao.dataset.ibge;
+    const nomeCompleto = botao.dataset.nome;
+    // Preenche os campos
+    document.getElementById('busca_municipio').value = nomeCompleto;
+    document.getElementById('cLocPrestServ').value = ibge;
+    // Limpa a listagem flutuante
+    document.getElementById('resultado-municipios').innerHTML = '';
+}
         

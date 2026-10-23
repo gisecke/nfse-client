@@ -1,25 +1,23 @@
-<div id="resultado-endereco">
-<div class="col-md-7">
-    <label for="xLgr" class="form-label">Logradouro</label>
-    <input type="text" class="form-control" value="{{rua}}" id="xLgr" placeholder="Rua, Avenida, etc.">
-</div>
-<div class="col-md-2">
-    <label for="nro" class="form-label">Número</label>
-    <input type="text" class="form-control" id="nro" placeholder="Nº">
-</div>
-<div class="col-md-2">
-    <label for="xBairro" class="form-label">Bairro</label>
-    <input type="text" class="form-control" value="{{bairro}}" id="xBairro" placeholder="Bairro">
-</div>
-<div class="col-md-2">
-    <label for="cMun" class="form-label">Cidade</label>
-    <input type="text" class="form-control" value="{{cidade}}" id="cMun" placeholder="Cidade">
-</div>
-<div class="col-md-2">
-    <label class="form-label" for="selectEstado">Estado</label>
-    <select class="form-select" id="selectEstado" disabled>
-        <option value="{{uf}}">{{estado}}</option>
-    </select>
-
-</div>
+<div id="resultado-endereco" class="row g-3">
+    <div class="col-md-6">
+        <label for="xLgr" class="form-label">Logradouro</label>
+        <input type="text" class="form-control" value="{{rua}}" id="xLgr" placeholder="Rua, Avenida, etc.">
+    </div>
+    <div class="col-md-2">
+        <label for="nro" class="form-label">Número</label>
+        <input type="text" class="form-control" id="nro" placeholder="Nº">
+    </div>
+    <div class="col-md-4">
+        <label for="xBairro" class="form-label">Bairro</label>
+        <input type="text" class="form-control" value="{{bairro}}" id="xBairro" placeholder="Bairro">
+    </div>
+    <div class="col-md-8">
+        <label for="cMun" class="form-label">Cidade</label>
+        <input type="text" class="form-control" value="{{cidade}}" id="cMun" placeholder="Cidade">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label" for="selectEstado">Estado</label>
+        <input type="text" class="form-control" value="{{estado}}" id="selectEstado" disabled readonly>
+        <input type="hidden" value="{{uf}}">
+    </div>
 </div>

@@ -1,6 +1,5 @@
 use askama::Template;
 use chrono::{ NaiveDate};
-use serde_json::Value;
 
 #[derive(Template)]
 #[template(path = "index.html")]
@@ -39,7 +38,8 @@ pub struct GerarNFSETemplate {
     pub bairro: String,
     pub cidade: String,
     pub uf: String,
-    pub estado: String
+    pub estado: String,
+    pub razao_social: String,
 }
 
 #[derive(Template)]
@@ -50,4 +50,10 @@ pub struct CepTemplate {
     pub cidade: String,
     pub uf: String,
     pub estado: String,
+}
+
+#[derive(Template)]
+#[template(path = "cnpj.html")]
+pub struct CnpjTemplate {
+    pub razao_social: String,
 }

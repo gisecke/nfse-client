@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize)]
 #[serde(rename = "ConsultarDadosCadastraisResposta")]
@@ -72,4 +72,27 @@ pub struct MensagemRetorno {
 
     #[serde(rename = "Mensagem")]
     pub mensagem: String,
+}
+
+#[derive(Deserialize)]
+pub struct MunicipioIbgeRaw {
+    #[serde(rename = "municipio-id")]
+    pub id: i32,
+    #[serde(rename = "municipio-nome")]
+    pub nome: String,
+    #[serde(rename = "UF-sigla")]
+    pub uf:String,
+}
+
+
+#[derive(Clone, Serialize)]
+pub struct Municipio {
+    pub ibge: String,
+    pub nome: String,
+    pub uf: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct QueryBusca {
+    pub q: Option<String>,
 }

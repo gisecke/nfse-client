@@ -9,7 +9,7 @@ use crate::deserialize_data::deserialize::*;
 
 use quick_xml::de;
 use serde_json::Value;
-use crate::requests::json::get_cep_json;
+use crate::requests::json::{get_values_json};
 
 // Home page
 #[get("/")]
@@ -113,17 +113,28 @@ async fn gerar_nfse_get() -> impl Responder {
         cidade: String::new(),
         uf: String::new(),
         estado: String::new(),
+        razao_social: String::new(),
     };
     HttpResponse::Ok()
     .content_type("text/html; charset=utf-8")
         .body(template.render().unwrap())
 }
 
+/*#[post("/gerar-nfse")]
+async fn gerar_nfse_post(form: web::Form<>) -> impl Responder {
+
+}
+
+ */
+
+// htmx
 #[post("/api/buscar-cep")]
 async fn buscar_cep(form: web::Form<CepForm>) -> impl Responder {
     let resultado = remove_period_dash_and_slash(form.cep.as_str());
 
-    match get_cep_json(resultado).await {
+    let url: String = format!("https://cepify.com.br/ws/{}/json", resultado);
+
+    match get_values_json(url).await {
         Ok(json) => {
             let value: Value = serde_json::from_str(json.text().await.unwrap().as_str()).unwrap();
             let template = CepTemplate {
@@ -152,4 +163,79 @@ async fn buscar_cep(form: web::Form<CepForm>) -> impl Responder {
         },
         Err(_e) => HttpResponse::InternalServerError().body("Erro json"),
     }
+}
+
+#[post("/api/buscar-cnpj")]
+async fn buscar_cnpj(form: web::Form<CadastroForm>) -> impl Responder {
+    let cnpj = remove_period_dash_and_slash(form.razao_social.as_str());
+    let url: String = format!("https://minhareceita.org/{}", cnpj);
+
+    if cnpj.len() == 14 {
+        match get_values_json(url).await {
+            Ok(json) => {
+                let value: Value = serde_json::from_str(json.text().await.unwrap().as_str()).unwrap();
+                let template = CnpjTemplate {
+                    razao_social: match value["razao_social"].as_str() {
+                        Some(razao_social) => razao_social.to_string(),
+                        None => "".to_string(),
+                    }
+                };
+                HttpResponse::Ok().body(template.render().unwrap())
+            },
+            Err(_e) => return HttpResponse::InternalServerError().body("Erro json"),
+        }
+    } else {
+        let template = CnpjTemplate {
+            razao_social: "".to_string()
+        };
+        HttpResponse::Ok().body(template.render().unwrap())
+    }
+
+}
+
+#[get("/api/municipios")]
+pub async fn buscar_municipios(
+    query: web::Query<QueryBusca>,
+    municipios: web::Data<Vec<Municipio>>
+) -> impl Responder {
+    let termo = query.q.as_deref().unwrap_or("").trim();
+
+    if termo.len() < 3 {
+        return HttpResponse::Ok().body("");
+    }
+
+    let termo_lower = termo.to_lowercase();
+
+    let correspondencia: Vec<&Municipio> = municipios
+        .iter()
+        .filter(|m| m.nome.to_lowercase().contains(&termo_lower))
+        .take(8)
+        .collect();
+
+    if correspondencia.is_empty() {
+        return HttpResponse::Ok().body(
+            r#"<div class="list-group-item text-muted small">Nenhum município encontrado
+            </div>"#);
+    }
+
+    let mut html = String::new();
+
+    for m in correspondencia {
+        let rotulo_completo = format!("{} - {}", m.nome, m.uf);
+        html.push_str(&format!(
+            r#"<button type="button"
+                       class="list-group-item list-group-item-action py-2 text-start"
+                       data-ibge="{ibge}"
+                       data-nome="{rotulo}"
+                       onclick="selecionarMunicipio(this)">
+                   <strong>{nome}</strong> <span class="badge bg-secondary ms-1">{uf}</span>
+                   <small class="text-muted float-end">IBGE: {ibge}</small>
+               </button>"#,
+            ibge = m.ibge,
+            rotulo = rotulo_completo,
+            nome = m.nome,
+            uf = m.uf
+        ));
+    }
+    HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html)
 }

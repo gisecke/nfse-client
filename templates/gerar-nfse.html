@@ -19,6 +19,26 @@
                         <label for="nDPS" class="form-label">Número da DPS</label>
                         <input type="number" class="form-control" id="nDPS" placeholder="Ex: 105" required>
                     </div>
+                    <div class="col-md-2">
+                        <label for="busca_municipio" class="form-label">Municipio de Prestação do Serviço</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                            <input type="text"
+                                   id="busca_municipio"
+                                   class="form-control"
+                                   placeholder="Digite a cidade"
+                                   autocomplete="off"
+                                   hx-get="/api/municipios"
+                                   hx-trigger="keyup changed delay:300ms"
+                                   hx-target="#resultado-municipios"
+                                   name="q">
+                        </div>
+                        <input type="hidden" id="cLocPrestServ" name="cLocPrestServ" required>
+                        <div id="resultado-municipios"
+                             class="list-group position-absolute w-100 shadow-sm z-3"
+                             style="max-height: 220px; overflow-y: auto;">
+                        </div>
+                    </div>
                     <div class="col-md-4">
                         <label for="dCompet" class="form-label">Data de Competência</label>
                         <input type="date" class="form-control" id="dCompet" value="{{data_local}}" required disabled readonly>
@@ -32,12 +52,13 @@
                 <div class="row mb-3">
                     <div class="col-md-4">
                         <label for="docTomador" class="form-label">CPF / CNPJ</label>
-                        <input type="text" class="form-control" id="docTomador" placeholder="Apenas números" required>
+                        <input type="text" class="form-control"
+                               hx-post="/api/buscar-cnpj"
+                               hx-trigger="blur"
+                               hx-target="#cnpj-resultado"
+                               hx-swap="innerHTML" name="razao_social" id="docTomador" placeholder="Apenas números" required>
                     </div>
-                    <div class="col-md-8">
-                        <label for="xNome" class="form-label">Razão Social / Nome Completo</label>
-                        <input type="text" class="form-control" id="xNome" placeholder="Ex: Hapvida Assistência Médica" required>
-                    </div>
+                    {% include "cnpj.html" %}
                 </div>
 
                 <div class="row mb-3">

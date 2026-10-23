@@ -11,3 +11,8 @@ pub struct ConsultarDadosCadastraisForm {
 pub struct CepForm {
     pub cep: String,
 }
+
+#[derive(Deserialize)]
+pub struct CadastroForm {
+    pub razao_social: String,
+}
