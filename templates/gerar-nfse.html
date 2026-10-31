@@ -8,21 +8,26 @@
             <h5 class="mb-0">Emitir Nova NFS-e (Tomador / Faturamento)</h5>
         </div>
         <div class="card-body bg-1">
-            <form method="post" action="gerar-nfse">
+            <form method="post" action="/gerar-nfse" accept-charset="UTF-8">
                 <!-- Linha 1: Dados Básicos da Nota -->
                 <div class="row mb-3">
                     <div class="col-md-4">
                         <label for="serie" class="form-label">Série da DPS</label>
-                        <input type="text" class="form-control" id="serie" value="1" required>
+                        <input type="text" class="form-control" id="serie" name="serie" value="8" required>
                     </div>
                     <div class="col-md-4">
                         <label for="nDPS" class="form-label">Número da DPS</label>
-                        <input type="number" class="form-control" id="nDPS" placeholder="Ex: 105" required>
+                        <input type="number" class="form-control" id="nDPS" name="numero_dps" placeholder="Ex: 105" required>
                     </div>
                     <div class="col-md-2">
                         <label for="busca_municipio" class="form-label">Municipio de Prestação do Serviço</label>
                         <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                            <span class="input-group-text">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-geo-alt" viewBox="0 0 16 16">
+  <path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A32 32 0 0 1 8 14.58a32 32 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10"/>
+  <path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4m0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+</svg>
+                            </span>
                             <input type="text"
                                    id="busca_municipio"
                                    class="form-control"
@@ -33,7 +38,7 @@
                                    hx-target="#resultado-municipios"
                                    name="q">
                         </div>
-                        <input type="hidden" id="cLocPrestServ" name="cLocPrestServ" required>
+                        <input type="hidden" id="cLocPrestServ" name="municipio_serv_prestado" required>
                         <div id="resultado-municipios"
                              class="list-group position-absolute w-100 shadow-sm z-3"
                              style="max-height: 220px; overflow-y: auto;">
@@ -41,7 +46,7 @@
                     </div>
                     <div class="col-md-4">
                         <label for="dCompet" class="form-label">Data de Competência</label>
-                        <input type="date" class="form-control" id="dCompet" value="{{data_local}}" required disabled readonly>
+                        <input type="date" class="form-control" id="dCompet" value="{{data_local}}" name="data_local" required readonly>
                     </div>
                 </div>
 
@@ -56,11 +61,26 @@
                                hx-post="/api/buscar-cnpj"
                                hx-trigger="blur"
                                hx-target="#cnpj-resultado"
-                               hx-swap="innerHTML" name="razao_social" id="docTomador" placeholder="Apenas números" required>
+                               hx-swap="innerHTML" id="docTomador" placeholder="Apenas números"
+                               name="documento" required>
                     </div>
                     {% include "cnpj.html" %}
+                    <div class="col mt-4">
+                        <p class="fw-bold">Tipo de retenção do ISSQN</p>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="tp_ret_issqn" id="naoRetido" value="1">
+                            <label class="form-check-label" for="naoRetido">
+                                Não retido
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="tp_ret_issqn" id="retidoTomador" value="2" checked>
+                            <label class="form-check-label" for="retidoTomador">
+                                Retido pelo Tomador
+                            </label>
+                        </div>
+                    </div>
                 </div>
-
                 <div class="row mb-3">
                     <div class="col-md-3">
                         <label for="cep" class="form-label">CEP</label>
@@ -72,11 +92,11 @@
                                hx-post="/api/buscar-cep"
                                hx-trigger="blur"
                                hx-target="#resultado-endereco"
-                               hx-swap="innerHTML">
+                               hx-swap="innerHTML"
+                               value="{{cep}}">
                     </div>
-                    {%  include "cep.html" %}
+                    {% include "cep.html" %}
                 </div>
-
                 <hr class="my-4">
 
                 <!-- Linha 3: Dados do Serviço -->
@@ -84,17 +104,26 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="cTribNac" class="form-label">Código de Tributação Nacional (LC 116)</label>
-                        <input type="text" class="form-control" id="cTribNac" value="04.08.02" required>
+                        <input type="text" class="form-control" id="cTribNac" name="ctribnac" value="04.08.02" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="cTribMun" class="form-label">Código de Tributação Municipal (LC 116)</label>
+                        <input type="text" class="form-control" id="cTribMun" name="ctribmun" value="8650004" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="cnbs" class="form-label">Código NBS</label>
+                        <input type="text" class="form-control" id="cnbs" name="cnbs" value="1.2301.92.00" placeholder="1.2301.92.00" required>
                     </div>
                     <div class="col-md-6">
                         <label for="vServ" class="form-label">Valor do Serviço (R$)</label>
-                        <input type="number" step="0.01" class="form-control" id="vServ" placeholder="0,00" required>
+                        <input type="number" step="0.01" class="form-control" id="vServ" name="vserv" placeholder="0,00" required>
                     </div>
+
                 </div>
 
                 <div class="mb-3">
                     <label for="xDescServ" class="form-label">Descrição Completa do Serviço</label>
-                    <textarea class="form-control" id="xDescServ" rows="3" placeholder="Descreva detalhadamente o serviço prestado..." required></textarea>
+                    <textarea class="form-control" id="xDescServ" rows="3" name="desc_serv" placeholder="Descreva detalhadamente o serviço prestado..." required></textarea>
                 </div>
 
                 <!-- Botão de Envio -->

@@ -34,9 +34,11 @@ pub struct ResultadoConsultarDadosCadastraisTemplate {
 #[template(path = "gerar-nfse.html")]
 pub struct GerarNFSETemplate {
     pub data_local: NaiveDate,
+    pub cep: String,
     pub rua: String,
     pub bairro: String,
     pub cidade: String,
+    pub ibge: String,
     pub uf: String,
     pub estado: String,
     pub razao_social: String,
@@ -48,6 +50,7 @@ pub struct CepTemplate {
     pub rua: String,
     pub bairro: String,
     pub cidade: String,
+    pub ibge: String,
     pub uf: String,
     pub estado: String,
 }
@@ -57,3 +60,7 @@ pub struct CepTemplate {
 pub struct CnpjTemplate {
     pub razao_social: String,
 }
+
+#[derive(Template)]
+#[template(path = "nfse_geradas.html")]
+pub struct NfseGeradasTemplate {}

@@ -22,15 +22,7 @@ pub async fn send_request(xml: String, service: String) -> Result<Response, Erro
 
 
     let soap_body = format!(
-        r#"<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:nfse="http://www.sped.fazenda.gov.br/nfse">
-            <soapenv:Header/>
-            <soapenv:Body>
-                <nfse:{service}>
-                    <nfse:nfseCabecMsg>{}</nfse:nfseCabecMsg>
-                    <nfse:nfseDadosMsg>{}</nfse:nfseDadosMsg>
-                </nfse:{service}>
-            </soapenv:Body>
-        </soapenv:Envelope>"#,
+        r#"<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:nfse="http://www.sped.fazenda.gov.br/nfse"><soapenv:Header/><soapenv:Body><nfse:{service}><nfse:nfseCabecMsg>{}</nfse:nfseCabecMsg><nfse:nfseDadosMsg>{}</nfse:nfseDadosMsg></nfse:{service}></soapenv:Body></soapenv:Envelope>"#,
         cabecalho_str,
         xml
     );
