@@ -2,41 +2,43 @@
 {% block title %}Consultar Dados Cadastrais{% endblock %}
 {% block content %}
 
-<div>
-    <h3>Dados cadastrais</h3>
-    <div>
+<div class="container">
+  <div class="d-flex flex-column justify-content-center rounded-9 border border-1 bg-4 pt-8 pb-8 mt-12">
+    <h3 class="fw-bold text-center text-primary">Dados cadastrais</h3>
+    <div class="ps-8">
         <div>
             <div>
-                <p>Nome / Nome Empresarial</p>
-                <p>{{nome}}</p>
+                <p>Nome / Nome Empresarial:
+                <span class="fw-bold">{{nome}}</span></p>
             </div>
             <div>
-                <p>CNPJ / CPF / NIF</p>
-                <p>{{documento}}</p>
+                <p>CNPJ / CPF / NIF:
+                <span class="fw-bold">{{documento}}</span></p>
             </div>
             <div>
-                <p>Status cadastro</p>
-                <p>{{status_cadastro}}</p>
+                <p>Status cadastro:
+                <span class="fw-bold">{{status_cadastro}}</span> </p>
             </div>
             <div>
-                <p>Indicador Municipal (Inscrição)</p>
-                <p>{{im}}</p>
+                <p>Indicador Municipal (Inscrição):
+                <span class="fw-bold">{{im}}</span></p>
             </div>
         </div>
         <div>
             <div>
-                <p>Telefone</p>
-                <p>{{telefone}}</p>
+                <p>Telefone:
+                <span class="fw-bold">{{telefone}}</span></p>
             </div>
             <div>
-                <p>Email</p>
-                <p>{{email}}</p>
+                <p>Email:
+                <span class="fw-bold">{{email}}</span></p>
             </div>
             <div>
-                <p>Endereço</p>
-                <p>{{rua}}, {{numero}}, {{municipio}} - {{estado}} CEP: {{cep}}</p>
+                <p>Endereço:
+                <span class="fw-bold">{{rua}}, {{numero}}, {{municipio}} - {{estado}} CEP: {{cep}}</span></p>
             </div>
         </div>
+    </div>
     </div>
 </div>
 {% endblock %}
