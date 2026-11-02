@@ -1,7 +1,12 @@
 use std::env;
 
-use crate::forms::forms::{ConsultarDadosCadastraisForm, DadosGerarNfse};
-use crate::handlers::events::{assinatura_gerar_nfse, format_in_xml_cpf_or_cnpj, get_date_and_local_time, remove_period_dash_and_slash, xml_versao_101};
+use crate::forms::{
+    ConsultarDadosCadastraisForm, DadosGerarNfse, Dps, Prestador, Servico, Tomador, Tributacao,
+};
+use crate::handlers::events::{
+    assinatura_gerar_nfse, format_in_xml_cpf_or_cnpj, get_date_and_local_time,
+    remove_period_dash_and_slash, xml_versao_101,
+};
 use crate::requests::soap::send_request;
 
 pub async fn cosultar_dados_cadastrais(
@@ -26,8 +31,6 @@ pub async fn cosultar_dados_cadastrais(
     </ConsultarDadosCadastraisEnvio>"#,
         documento_xml, im
     );
-
-    println!("xml: {}", xml_bruto);
 
     match send_request(xml_bruto, "ConsultarDadosCadastrais".to_string()).await {
         Ok(response) => response.text().await,
@@ -72,89 +75,68 @@ pub async fn consultar_dps_disponivel() -> Result<String, reqwest::Error> {
 }
 
 pub async fn gerar_nfse(dados: DadosGerarNfse) -> Result<String, reqwest::Error> {
+    let tipo_inscricao = if dados.documento.len() > 11 { "2" } else { "1" };
 
-    let cnpj_prest = env::var("CNPJ_PREST").expect("CNPJ não encontrado");
-    let im_prest = env::var("IM").expect("Inscrição Municipal do prestador não encontrado");
+    let prestador = Prestador {
+        cnpj: env::var("CNPJ_PREST").expect("CNPJ não encontrado"),
+        im: env::var("IM").expect("Inscrição Municipal do prestador não encontrado"),
+    };
 
-    let tipo_inscricao = if dados.documento.len() > 11 {
-        "2" } else {
-            "1"
-        };
-
-    let documento_limpo = remove_period_dash_and_slash(&dados.documento);
-    let documento_formatado_xml = format_in_xml_cpf_or_cnpj(&documento_limpo);
-    let localidade_prest_servico = dados.municipio_serv_prestado;
-    
     let id_dps = format!(
         "DPS{:0>7}{}{:0>14}{:0>5}{:0>15}",
-        localidade_prest_servico,
+        dados.municipio_serv_prestado,
         tipo_inscricao,
-        cnpj_prest,
+        prestador.cnpj,
         dados.serie,
         dados.numero_dps,
     );
 
-    let serie_dps = dados.serie;
-    let numero_dps = dados.numero_dps;
-    let data_servico = dados.data_local;
-    let razao_social_tomador = dados.razao_social;
-    let cep_tomador = remove_period_dash_and_slash(&dados.cep);
-    let codigo_municipio_tomador = dados.codigo_ibge_mun_tomador;
-    let logradouro = dados.logradouro;
-    let numero_end = dados.nro;
-    let bairro = dados.xbairro;
-    let cod_trib_nacional = remove_period_dash_and_slash(&dados.ctribnac);
-    let cod_trib_municipal = dados.ctribmun;
-    let cod_nbs = remove_period_dash_and_slash(&dados.cnbs);
-    let descricao = dados.desc_serv;
-    let valor_ser = dados.vserv;
-    let tipo_retencao = dados.tp_ret_issqn;
+    let dps = Dps {
+        id: id_dps,
+        homologacao_ou_producao: env::var("HOMOLOGACAO_OU_PRODUCAO")
+            .expect("Valor de chave não encontrado"),
+        data_hora_local: get_date_and_local_time(),
+        serie: dados.serie,
+        numero: dados.numero_dps,
+        localidade: dados.municipio_serv_prestado.clone(),
+    };
 
-    let homologacao_ou_producao = env::var("HOMOLOGACAO_OU_PRODUCAO").expect("Valor de chave não encontrado");
+    let tomador = Tomador {
+        cadastro: format_in_xml_cpf_or_cnpj(&remove_period_dash_and_slash(&dados.documento)),
+        razao_social: dados.razao_social,
+        codigo_municipal: dados.codigo_ibge_mun_tomador,
+        cep: remove_period_dash_and_slash(&dados.cep),
+        logradouro: dados.logradouro,
+        nro_end: dados.nro,
+        bairro: dados.xbairro,
+    };
 
+    let tributacao = Tributacao {
+        localidade: dados.municipio_serv_prestado.clone(),
+        cod_trib_nacional: remove_period_dash_and_slash(&dados.ctribnac),
+        cod_trib_municipal: remove_period_dash_and_slash(&dados.ctribmun),
+        cod_nbs: remove_period_dash_and_slash(&dados.cnbs),
+        tp_ret_issqn: dados.tp_ret_issqn,
+    };
 
-    let data_hora_local = get_date_and_local_time();
+    let servico = Servico {
+        data: dados.data_local,
+        descricao: dados.desc_serv,
+        valor: dados.vserv,
+    };
 
-
-
-    let xml = xml_versao_101(id_dps,
-                             homologacao_ou_producao,
-                             data_hora_local,
-                             serie_dps,
-                             numero_dps,
-                             data_servico,
-                             localidade_prest_servico.clone(),
-                             cnpj_prest,
-                             im_prest,
-                             documento_formatado_xml,
-                             razao_social_tomador,
-                             codigo_municipio_tomador,
-                             cep_tomador,
-                             logradouro,
-                             numero_end,
-                             bairro,
-                             localidade_prest_servico,
-                             cod_trib_nacional,
-                             cod_trib_municipal,
-                             descricao,
-                             cod_nbs,
-                             valor_ser,
-                             tipo_retencao,
-    );
-
+    let xml = xml_versao_101(dps, prestador, tomador, tributacao, servico);
 
     let dps_assinado = assinatura_gerar_nfse(&xml);
 
-    let xml_completo = format!(r#"<GerarNfseEnvio xmlns="http://www.sped.fazenda.gov.br/nfse">{}</GerarNfseEnvio>"#, dps_assinado);
+    let xml_completo = format!(
+        r#"<GerarNfseEnvio xmlns="http://www.sped.fazenda.gov.br/nfse">{}</GerarNfseEnvio>"#,
+        dps_assinado
+    );
     println!("{}", xml_completo);
 
-
     match send_request(xml_completo, "GerarNfse".to_string()).await {
-        Ok(response) => {
-            response.text().await
-        },
+        Ok(response) => response.text().await,
         Err(e) => Err(e),
     }
-
-    
 }

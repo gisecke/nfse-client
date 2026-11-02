@@ -1,3 +1,4 @@
+use crate::forms::{Dps, Prestador, Servico, Tomador, Tributacao};
 use chrono::Local;
 use fiscal_crypto::certificate::{load_certificate, sign_dps_xml};
 use std::{env, fs};
@@ -80,32 +81,37 @@ pub fn format_phone_number(number: &str) -> String {
 }
 
 pub fn xml_versao_101(
-    id_dps: String,
-    homologacao_ou_producao: String,
-    data_hora_local: String,
-    serie_dps: String,
-    numero_dps: String,
-    data_servico: String,
-    localidade_emissora: String,
-    cnpj_prest: String,
-    im_prest: String,
-    documento_formatado_xml: String,
-    razao_social_tomador: String,
-    codigo_municipio_tomador: String,
-    cep_tomador: String,
-    logradouro: String,
-    numero_end: String,
-    bairro: String,
-    localidade_prest_servico: String,
-    cod_trib_nacional: String,
-    cod_trib_municipal: String,
-    descricao: String,
-    cod_nbs: String,
-    valor_ser: String,
-    tp_ret_issqn: String,
+    dps: Dps,
+    prestador: Prestador,
+    tomador: Tomador,
+    tributacao: Tributacao,
+    servico: Servico,
 ) -> String {
     let xml = format!(
-        r#"<infDPS Id="{id_dps}"><tpAmb>{homologacao_ou_producao}</tpAmb><dhEmi>{data_hora_local}</dhEmi><verAplic>0.1.0</verAplic><serie>{serie_dps}</serie><nDPS>{numero_dps}</nDPS><dCompet>{data_servico}</dCompet><tpEmit>1</tpEmit><cLocEmi>{localidade_emissora}</cLocEmi><prest><CNPJ>{cnpj_prest}</CNPJ><IM>{im_prest}</IM><regTrib><opSimpNac>1</opSimpNac><regEspTrib>0</regEspTrib></regTrib></prest><toma>{documento_formatado_xml}<xNome>{razao_social_tomador}</xNome><end><endNac><cMun>{codigo_municipio_tomador}</cMun><CEP>{cep_tomador}</CEP></endNac><xLgr>{logradouro}</xLgr><nro>{numero_end}</nro><xBairro>{bairro}</xBairro></end></toma><serv><locPrest><cLocPrestacao>{localidade_prest_servico}</cLocPrestacao></locPrest><cServ><cTribNac>{cod_trib_nacional}</cTribNac><cTribMun>{cod_trib_municipal}</cTribMun><xDescServ>{descricao}</xDescServ><cNBS>{cod_nbs}</cNBS></cServ></serv><valores><vServPrest><vServ>{valor_ser}</vServ></vServPrest><trib><tribMun><tribISSQN>1</tribISSQN><tpRetISSQN>{tp_ret_issqn}</tpRetISSQN></tribMun><tribFed><piscofins><CST>00</CST><tpRetPisCofins>0</tpRetPisCofins></piscofins></tribFed><totTrib><pTotTrib><pTotTribFed>13.45</pTotTribFed><pTotTribEst>0.00</pTotTribEst><pTotTribMun>2.00</pTotTribMun></pTotTrib></totTrib></trib></valores><IBSCBS><finNFSe>0</finNFSe><indFinal>0</indFinal><cIndOp>030102</cIndOp><indDest>0</indDest><valores><trib><gIBSCBS><CST>200</CST><cClassTrib>200029</cClassTrib></gIBSCBS></trib></valores></IBSCBS></infDPS>"#
+        r#"<infDPS Id="{}"><tpAmb>{}</tpAmb><dhEmi>{}</dhEmi><verAplic>0.1.0</verAplic><serie>{}</serie><nDPS>{}</nDPS><dCompet>{}</dCompet><tpEmit>1</tpEmit><cLocEmi>{}</cLocEmi><prest><CNPJ>{}</CNPJ><IM>{}</IM><regTrib><opSimpNac>1</opSimpNac><regEspTrib>0</regEspTrib></regTrib></prest><toma>{}<xNome>{}</xNome><end><endNac><cMun>{}</cMun><CEP>{}</CEP></endNac><xLgr>{}</xLgr><nro>{}</nro><xBairro>{}</xBairro></end></toma><serv><locPrest><cLocPrestacao>{}</cLocPrestacao></locPrest><cServ><cTribNac>{}</cTribNac><cTribMun>{}</cTribMun><xDescServ>{}</xDescServ><cNBS>{}</cNBS></cServ></serv><valores><vServPrest><vServ>{}</vServ></vServPrest><trib><tribMun><tribISSQN>1</tribISSQN><tpRetISSQN>{}</tpRetISSQN></tribMun><tribFed><piscofins><CST>00</CST><tpRetPisCofins>0</tpRetPisCofins></piscofins></tribFed><totTrib><pTotTrib><pTotTribFed>13.45</pTotTribFed><pTotTribEst>0.00</pTotTribEst><pTotTribMun>2.00</pTotTribMun></pTotTrib></totTrib></trib></valores><IBSCBS><finNFSe>0</finNFSe><indFinal>0</indFinal><cIndOp>030102</cIndOp><indDest>0</indDest><valores><trib><gIBSCBS><CST>200</CST><cClassTrib>200029</cClassTrib></gIBSCBS></trib></valores></IBSCBS></infDPS>"#,
+        dps.id,
+        dps.homologacao_ou_producao,
+        dps.data_hora_local,
+        dps.serie,
+        dps.numero,
+        servico.data,
+        dps.localidade,
+        prestador.cnpj,
+        prestador.im,
+        tomador.cadastro,
+        tomador.razao_social,
+        tomador.codigo_municipal,
+        tomador.cep,
+        tomador.logradouro,
+        tomador.nro_end,
+        tomador.bairro,
+        tributacao.localidade,
+        tributacao.cod_trib_nacional,
+        tributacao.cod_trib_municipal,
+        servico.descricao,
+        tributacao.cod_nbs,
+        servico.valor,
+        tributacao.tp_ret_issqn,
     );
 
     xml
@@ -131,4 +137,3 @@ pub fn assinatura_gerar_nfse(xml: &str) -> String {
     sign_dps_xml(&xml_dps, &cert_data.private_key, &cert_data.certificate)
         .expect("Erro ao assinar DPS")
 }
-
