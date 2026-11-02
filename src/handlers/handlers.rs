@@ -1,15 +1,17 @@
-use crate::handlers::events::{extract_pay_load, remove_period_dash_and_slash};
+use crate::deserialize_data::deserialize::*;
+use crate::forms::*;
+use crate::handlers::events::{
+    extract_pay_load, format_cadastro, format_phone_number, remove_period_dash_and_slash,
+};
 use crate::models::public::*;
+use crate::services::services::*;
 use actix_web::{HttpResponse, Responder, get, post, web};
 use askama::Template;
 use chrono::Local;
-use crate::forms::forms::*;
-use crate::services::services::*;
-use crate::deserialize_data::deserialize::*;
 
+use crate::requests::json::get_values_json;
 use quick_xml::de;
 use serde_json::Value;
-use crate::requests::json::{get_values_json};
 
 // Home page
 #[get("/")]
@@ -24,7 +26,6 @@ async fn home() -> impl Responder {
 //Consultar Dados Cadastrais através do CNPJ
 #[get("/consultar-dados-cadastrais")]
 async fn consultar_dados_cadastrais_get() -> impl Responder {
-    
     let template = ConsultarDadosCadastraisTemplate {};
 
     HttpResponse::Ok()
@@ -33,25 +34,31 @@ async fn consultar_dados_cadastrais_get() -> impl Responder {
 }
 
 #[post("/consultar-dados-cadastrais")]
-async fn consultar_dados_cadastrais_post(form: web::Form<ConsultarDadosCadastraisForm>) -> impl Responder {
-    
+async fn consultar_dados_cadastrais_post(
+    form: web::Form<ConsultarDadosCadastraisForm>,
+) -> impl Responder {
     // Aqui você pode processar os dados recebidos do formulário
-   match cosultar_dados_cadastrais(form.into_inner()).await {
+    match cosultar_dados_cadastrais(form.into_inner()).await {
         Ok(resposta) => {
-
             println!("Resposta: {}", resposta);
 
-            if resposta.contains("<ConsultarDadosCadastraisResposta>") {
-                let resultado: ConsultarDadosCadastraisResposta = de::from_str(extract_pay_load(&resposta, "ConsultarDadosCadastraisResposta").expect("Não encontrado dados")).unwrap();
+            if resposta.contains("<Cadastro>") {
+                let resultado: ConsultarDadosCadastraisResposta = de::from_str(
+                    extract_pay_load(&resposta, "ConsultarDadosCadastraisResposta")
+                        .expect("Não encontrado dados"),
+                )
+                .unwrap();
                 match resultado.cadastro {
                     Some(cad) => {
+                        let documento = format_cadastro(&cad.cnpj.or(cad.cpf).unwrap());
+                        let telefone = format_phone_number(&cad.telefone.unwrap());
                         let endereco = cad.endereco.unwrap();
                         let template = ResultadoConsultarDadosCadastraisTemplate {
-                            documento: cad.cnpj.or(cad.cpf).unwrap(),
+                            documento,
                             im: cad.im.unwrap(),
                             status_cadastro: cad.status_cadastro.unwrap(),
                             nome: cad.x_nome.unwrap(),
-                            telefone: cad.telefone.unwrap(),
+                            telefone,
                             email: cad.email.unwrap(),
                             rua: endereco.rua.unwrap(),
                             numero: endereco.numero.unwrap(),
@@ -62,54 +69,36 @@ async fn consultar_dados_cadastrais_post(form: web::Form<ConsultarDadosCadastrai
                         };
 
                         return HttpResponse::Ok()
-                            .content_type("text/html; charset=utf-8").body(template.render().unwrap());
-                    },
-                    None => {
-                        HttpResponse::InternalServerError().body("Erro interno")
-                    },
-
-
+                            .content_type("text/html; charset=utf-8")
+                            .body(template.render().unwrap());
+                    }
+                    _ => HttpResponse::InternalServerError().body("Erro interno"),
                 };
-                match resultado.lista_mensagem_retorno {
-                    Some(erros) => {
-                        for err in erros.mensagem_retorno {
-                            println!("Erro do WebService [{}]: {}", err.codigo, err.mensagem);
-                        }
-                    },
-                    None => {}
-
-                }
             } else {
-                return HttpResponse::Ok().content_type("text/html; charset=utf-8").body(resposta);
+                return HttpResponse::Ok()
+                    .content_type("text/html; charset=utf-8")
+                    .body(resposta);
             }
-        },
+        }
         Err(e) => panic!("Erro na resposta do xml {}", e),
-   };
+    };
 
     // Retornar uma resposta simples
     HttpResponse::Ok().body("Dados recebidos com sucesso!")
 }
 //---------------------- Consultar Dados Cadastrais
 
-
 //Consulta DPS disponivel
 #[get("/dps-disponivel")]
 async fn numero_dps_disponivel() -> impl Responder {
     match consultar_dps_disponivel().await {
-        Ok(resposta) => {
-            HttpResponse::Ok().body(resposta)
-        },
-        Err(_) => {
-            HttpResponse::InternalServerError().body("Erro:")
-        }
+        Ok(resposta) => HttpResponse::Ok().body(resposta),
+        Err(_) => HttpResponse::InternalServerError().body("Erro:"),
     }
-
 }
 
 #[get("/gerar-nfse")]
 async fn gerar_nfse_get() -> impl Responder {
-
-
     let template = GerarNFSETemplate {
         data_local: Local::now().date_naive(),
         cep: String::new(),
@@ -122,32 +111,20 @@ async fn gerar_nfse_get() -> impl Responder {
         razao_social: String::new(),
     };
     HttpResponse::Ok()
-    .content_type("text/html; charset=utf-8")
+        .content_type("text/html; charset=utf-8")
         .body(template.render().unwrap())
 }
 
 #[post("/gerar-nfse")]
 async fn gerar_nfse_post(form: web::Form<DadosGerarNfse>) -> impl Responder {
-    
     let dados = form.into_inner();
-    
+
     let resultado = gerar_nfse(dados).await;
 
-
-
-
     match resultado {
-        Ok(resposta) => {
-            HttpResponse::Ok().body(resposta)
-        },
-        Err(_) => {
-            HttpResponse::InternalServerError().body("Erro:{}")
-        }
+        Ok(resposta) => HttpResponse::Ok().body(resposta),
+        Err(_) => HttpResponse::InternalServerError().body("Erro:{}"),
     }
-    
-
-
-
 }
 
 // htmx
@@ -184,10 +161,10 @@ async fn buscar_cep(form: web::Form<CepForm>) -> impl Responder {
                 estado: match value["estado"].as_str() {
                     Some(estado) => estado.to_string(),
                     None => "".to_string(),
-                }
+                },
             };
             HttpResponse::Ok().body(template.render().unwrap())
-        },
+        }
         Err(_e) => HttpResponse::InternalServerError().body("Erro json"),
     }
 }
@@ -200,7 +177,8 @@ async fn buscar_cnpj(form: web::Form<CadastroForm>) -> impl Responder {
     if cnpj.len() == 14 {
         match get_values_json(url).await {
             Ok(json) => {
-                let value: Value = serde_json::from_str(json.text().await.unwrap().as_str()).unwrap();
+                let value: Value =
+                    serde_json::from_str(json.text().await.unwrap().as_str()).unwrap();
                 let template = CnpjTemplate {
                     razao_social: match value["razao_social"].as_str() {
                         Some(razao_social) => razao_social.to_string(),
@@ -208,7 +186,7 @@ async fn buscar_cnpj(form: web::Form<CadastroForm>) -> impl Responder {
                     },
                 };
                 HttpResponse::Ok().body(template.render().unwrap())
-            },
+            }
             Err(_e) => HttpResponse::InternalServerError().body("Erro json"),
         }
     } else {
@@ -217,13 +195,12 @@ async fn buscar_cnpj(form: web::Form<CadastroForm>) -> impl Responder {
         };
         HttpResponse::Ok().body(template.render().unwrap())
     }
-
 }
 
 #[get("/api/municipios")]
 async fn buscar_municipios(
     query: web::Query<QueryBusca>,
-    municipios: web::Data<Vec<Municipio>>
+    municipios: web::Data<Vec<Municipio>>,
 ) -> impl Responder {
     let termo = query.q.as_deref().unwrap_or("").trim();
 
@@ -242,7 +219,8 @@ async fn buscar_municipios(
     if correspondencia.is_empty() {
         return HttpResponse::Ok().body(
             r#"<div class="list-group-item text-muted small">Nenhum município encontrado
-            </div>"#);
+            </div>"#,
+        );
     }
 
     let mut html = String::new();
@@ -264,5 +242,7 @@ async fn buscar_municipios(
             uf = m.uf
         ));
     }
-    HttpResponse::Ok().content_type("text/html; charset=utf-8").body(html)
+    HttpResponse::Ok()
+        .content_type("text/html; charset=utf-8")
+        .body(html)
 }
